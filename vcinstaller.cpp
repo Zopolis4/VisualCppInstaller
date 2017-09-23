@@ -1,7 +1,5 @@
-// This program reads the file visualstudio.vsman,
-// produces a list of available packages and
-// generate bat script that one can execute to
-// download and install the packages
+// This program reads the file visualstudio.vsman, produces a list of available packages
+// and generate bat script that one can execute to download and install the packages
 
 #include <stdio.h>
 //#include <fstream>
@@ -14,7 +12,7 @@ using json = nlohmann::json;
 static inline void print_indent(int indent)
 {
 	for(int i = 0; i < indent; i++)
-	printf("  ");
+		printf("  ");
 }
 
 void print_type(json & j, int indent)
@@ -69,25 +67,51 @@ int main(int argc, char** argv)
 
 	auto j = json::parse(text);
 
-	// Use this to detect the structure of the file
+	// Stage 1: Use this to detect the structure of the file
 	print_type(j, 1);
 	
 	//auto info = j["info"];
+	// Stage 2: List the available packages by id
 	auto pkgs = j["packages"];
 	auto numpkgs = pkgs.size();
-	printf("Number of packages: %d\n", numpkgs);
+	printf("\nNumber of packages: %d\n", numpkgs);
+	auto download_script = fopen("vc_download.sh", "wb");
+	auto install_script = fopen("vc_install.bat", "wb");
 	for(int i = 0; i < numpkgs; i++)
 	{
 		auto p = pkgs[i];
-		std::cout << p["id"] << " : " << p["types"] << " : " << p["payloads"] <<  "\n";
+		std::string pid = p["id"]; // p["id"].get<std::string>()
+		auto pchip = p["chip"];
+		if (!strncmp(pid.c_str(), "Microsoft.VisualC", 17))
+		{
+			//std::cout << pid << " : " << pchip <<  "\n";
+			auto pl = p["payloads"];
+
+			// mkdir for the package (package can share payload file such as cab1.cab)
+			// that's why we need a separate folder for each package
+			// then cd into the directory to run wget there
+			fprintf(download_script, "test -e %s || mkdir %s\ncd %s\n", pid.c_str(), pid.c_str(), pid.c_str());
+			for(int k = 0; k < pl.size(); k++)
+			{
+				std::string url = pl[k]["url"];
+				fprintf(download_script, "wget --no-certificate-check %s\n", url.c_str());
+			}
+			printf(download_script, "cd ..\n");
+
+			// Use msiexec to deploy the package
+			printf(install_script, "msiexec /a \"%s/%s\" TARGETDIR=%%VCINSTALLDIR%%\n", pid.c_str(), pid.c_str());
+		}
 	}
+	fclose(download_script);
+	fclose(install_script);
+
+	// Stage 3: Generate bat script to download and install VC headers and libraries
+
 
 	/*std::ifstream input_stream("visualstudio.vsman");
 	json j;
 	input_stream >> j;
 	std::cout << j;*/
-
-	// packages is an array
 
 	return 0;
 }
