@@ -86,6 +86,7 @@ int main(int argc, char** argv)
 	// Stage 3: Generate bat script to download and install VC headers and libraries
 	auto download_script = fopen("vc_download.sh", "w+b");
 	auto install_script = fopen("vc_install.bat", "w+b");
+	bool print_version = true;
 	if (download_script == NULL || install_script == NULL)
 	{
 		printf("Can't create download/install script\n");
@@ -104,6 +105,11 @@ int main(int argc, char** argv)
 			//Stage 2: `std::cout << p["id"] << " : " << p["chip"] <<  "\n";`
 			auto payloads = p["payloads"];
 			auto pids = pid.c_str();
+			if (print_version)
+			{
+				std::cout << "VC version: " << p["version"] << "\n";
+				print_version = false;
+			}
 
 			// mkdir for the package (package can share payload file such as cab1.cab)
 			// that's why we need a separate folder for each package
