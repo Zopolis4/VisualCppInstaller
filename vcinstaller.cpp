@@ -98,7 +98,8 @@ int main(int argc, char** argv)
 
 		// Filter packages related to Visual C++
 		// TODO Enhance this to take a list of packages as arguments
-		if (!strncmp(pid.c_str(), "Microsoft.VisualC", 17))
+		// TODO Filter out the Resources packages
+		if (!strncmp(pid.c_str(), "Microsoft.VisualC.", 18))
 		{
 			//Stage 2: `std::cout << p["id"] << " : " << p["chip"] <<  "\n";`
 			auto payloads = p["payloads"];
