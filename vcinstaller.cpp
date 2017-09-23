@@ -109,15 +109,26 @@ int main(int argc, char** argv)
 			// that's why we need a separate folder for each package
 			// then cd into the directory to run wget there
 			fprintf(download_script, "test -e %s || mkdir %s\ncd %s\n", pids, pids, pids);
+			std::string msiFileName;
+			bool hasMsi = false;
 			for(int k = 0; k < payloads.size(); k++)
 			{
+				std::string fileName = payloads[k]["fileName"];
 				std::string url = payloads[k]["url"];
 				fprintf(download_script, "wget --no-check-certificate %s\n", url.c_str());
+				if (!strstr(fileName.c_str(), ".Msi"))
+				{
+					msiFile = fileName;
+					hasMsi = true;
+				}
 			}
 			fprintf(download_script, "cd ..\n");
 
 			// Use msiexec to deploy the package
-			fprintf(install_script, "msiexec /a \"%s/%s\" TARGETDIR=%%VCINSTALLDIR%%\n", pids, pids);
+			if (hasMsi)
+			{
+				fprintf(install_script, "cd %s && msiexec /a \"%s\" TARGETDIR=%%VCINSTALLDIR%% && cd ..\n", pids, msiFileName);
+			}
 		}
 	}
 	fclose(download_script);
