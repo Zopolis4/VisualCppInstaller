@@ -1,7 +1,9 @@
 Windows 10 Headers and Libraries
 ================================
 
-Open bash terminal, `cd` to the `Installers` directory and do
+Fetch the SDK installer at https://go.microsoft.com/fwlink/p/?linkid=845298 and use it to download headers and libraries for C++ desktop developments (about 300 MB).
+
+Open bash terminal (e.g. Git bash), `cd` to the `Installers` directory and do
 
     # Replace USERNAME by your actual user name
     export SDK=C:\Users\USERNAME\Downloads\SDK
@@ -12,14 +14,15 @@ Open Windows command prompt and execute
     @echo off
     a.bat
 
+The headers and libraries should be available in `C:\Users\USERNAME\Downloads\SDK`.
+
 MSVC Headers and Libraries (Without Admin)
 ==========================================
 
 Fetch the file `visualstudio.15.release.chman` at https://aka.ms/vs/15/release and look for URL to `visualstudio.vsman` in that file e.g. https://download.visualstudio.microsoft.com/download/pr/11425389/a0bbc4b88f1988a4f20ee723c6ec428a/visualstudio.vsman
-Download `visualstudio.vsman` and there are links to the Visual Studio installer packages, grab them with
+Rename the file `visualstudio.vsman` to `pkgs.json`
 
-    grep "\"https://.*\" visualstudio.vsman >a.txt
-
-Use [wget](http://gnuwin32.sourceforge.net/packages/wget.htm) to download them all
-
-    wget --no-check-certificate -q -i a.txt
+Compile our program `vcinstaller.cpp` for example with our [DevMax]() and [C++ Compiler]() or if you trust us, fetch our binary releases
+Put the program in the same folder containing `pkgs.json` and run it to produce the two scripts
+ * The shell script `vc_download.sh` to download the packages: Download [wget](http://gnuwin32.sourceforge.net/packages/wget.htm) and run this script.
+ * The batch script `vc_install.bat` to install the packages: After download script completes, open Windows command prompt, do `set VCINSTALLDIR=C:\Users\USERNAME\Downloads\MSVC` and then run this script.
