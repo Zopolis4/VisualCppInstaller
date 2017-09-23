@@ -7,7 +7,7 @@
 		"build_steps": [
 			{
 				"action":"compile",
-				"args":["-fms-extensions", "-fms-compatibility", "-fms-compatibility-version=19.10.25017", "-std=c++14", "-fcxx-exceptions", "-fexceptions"],
+				"args":["-fms-extensions", "-fms-compatibility", "-fms-compatibility-version=19.10.25017", "-std=c++14", "-fcxx-exceptions", "-fexceptions", "-D", "_CRT_SECURE_NO_WARNINGS"],
 				"sys_include_dir":["ucrt","msvc"],
 				"inputs":["vcinstaller.cpp"],
 				"outputdir":"bin"

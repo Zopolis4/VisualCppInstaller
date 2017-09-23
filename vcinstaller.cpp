@@ -1,13 +1,16 @@
 // This program reads the file visualstudio.vsman, produces a list of available packages
 // and generate bat script that one can execute to download and install the packages
 
+#define VS_PKGS_MAN_FILE "pkgs.json"
+
 #include <stdio.h>
 //#include <fstream>
+
+#if 1
+
 #include "json.hpp"
 
 using json = nlohmann::json;
-
-#define VS_PKGS_MAN_FILE "pkgs.json"
 
 static inline void print_indent(int indent)
 {
@@ -47,6 +50,8 @@ void print_type(json & j, int indent)
 	}
 }
 
+#endif
+
 int main(int argc, char** argv)
 {
 	auto file = fopen(VS_PKGS_MAN_FILE, "rb");
@@ -65,53 +70,57 @@ int main(int argc, char** argv)
 	printf("Finish reading.\n");
 	fclose(file);
 
+	// Alternative way to read JSON; but this does not display error for debugging
+	/*std::ifstream input_stream("visualstudio.vsman");
+	json j;
+	input_stream >> j;*/
 	auto j = json::parse(text);
 
 	// Stage 1: Use this to detect the structure of the file
 	print_type(j, 1);
-	
-	//auto info = j["info"];
-	// Stage 2: List the available packages by id
+
+	// Stage 2: List the available packages by id to know what to get
 	auto pkgs = j["packages"];
 	auto numpkgs = pkgs.size();
 	printf("\nNumber of packages: %d\n", numpkgs);
-	auto download_script = fopen("vc_download.sh", "wb");
-	auto install_script = fopen("vc_install.bat", "wb");
+	// Stage 3: Generate bat script to download and install VC headers and libraries
+	auto download_script = fopen("vc_download.sh", "w+b");
+	auto install_script = fopen("vc_install.bat", "w+b");
+	if (download_script == NULL || install_script == NULL)
+	{
+		printf("Can't create download/install script\n");
+		return 1;
+	}
 	for(int i = 0; i < numpkgs; i++)
 	{
 		auto p = pkgs[i];
 		std::string pid = p["id"]; // p["id"].get<std::string>()
-		auto pchip = p["chip"];
+
+		// Filter packages related to Visual C++
+		// TODO Enhance this to take a list of packages as arguments
 		if (!strncmp(pid.c_str(), "Microsoft.VisualC", 17))
 		{
-			//std::cout << pid << " : " << pchip <<  "\n";
-			auto pl = p["payloads"];
+			//Stage 2: `std::cout << p["id"] << " : " << p["chip"] <<  "\n";`
+			auto payloads = p["payloads"];
+			auto pids = pid.c_str();
 
 			// mkdir for the package (package can share payload file such as cab1.cab)
 			// that's why we need a separate folder for each package
 			// then cd into the directory to run wget there
-			fprintf(download_script, "test -e %s || mkdir %s\ncd %s\n", pid.c_str(), pid.c_str(), pid.c_str());
-			for(int k = 0; k < pl.size(); k++)
+			fprintf(download_script, "test -e %s || mkdir %s\ncd %s\n", pids, pids, pids);
+			for(int k = 0; k < payloads.size(); k++)
 			{
-				std::string url = pl[k]["url"];
-				fprintf(download_script, "wget --no-certificate-check %s\n", url.c_str());
+				std::string url = payloads[k]["url"];
+				fprintf(download_script, "wget --no-check-certificate %s\n", url.c_str());
 			}
-			printf(download_script, "cd ..\n");
+			fprintf(download_script, "cd ..\n");
 
 			// Use msiexec to deploy the package
-			printf(install_script, "msiexec /a \"%s/%s\" TARGETDIR=%%VCINSTALLDIR%%\n", pid.c_str(), pid.c_str());
+			fprintf(install_script, "msiexec /a \"%s/%s\" TARGETDIR=%%VCINSTALLDIR%%\n", pids, pids);
 		}
 	}
 	fclose(download_script);
 	fclose(install_script);
-
-	// Stage 3: Generate bat script to download and install VC headers and libraries
-
-
-	/*std::ifstream input_stream("visualstudio.vsman");
-	json j;
-	input_stream >> j;
-	std::cout << j;*/
 
 	return 0;
 }
