@@ -1,10 +1,9 @@
 // This program reads the file visualstudio.vsman, produces a list of available packages
 // and generate bat script that one can execute to download and install the packages
 
-#define VS_PKGS_MAN_FILE "pkgs.json"
+#define VS_PKGS_MAN_FILE "visualstudio.vsman"
 
 #include <stdio.h>
-//#include <fstream>
 
 #if 1
 
@@ -77,7 +76,7 @@ int main(int argc, char** argv)
 	auto j = json::parse(text);
 
 	// Stage 1: Use this to detect the structure of the file
-	print_type(j, 1);
+	//print_type(j, 1);
 
 	// Stage 2: List the available packages by id to know what to get
 	auto pkgs = j["packages"];
@@ -124,7 +123,7 @@ int main(int argc, char** argv)
 				fprintf(download_script, "wget --no-check-certificate %s\n", url.c_str());
 				if (!strstr(fileName.c_str(), ".Msi"))
 				{
-					msiFile = fileName;
+					msiFileName = fileName;
 					hasMsi = true;
 				}
 			}
@@ -133,7 +132,7 @@ int main(int argc, char** argv)
 			// Use msiexec to deploy the package
 			if (hasMsi)
 			{
-				fprintf(install_script, "cd %s && msiexec /a \"%s\" TARGETDIR=%%VCINSTALLDIR%% && cd ..\n", pids, msiFileName);
+				fprintf(install_script, "cd %s && msiexec /a \"%s\" TARGETDIR=%%VCINSTALLDIR%% && cd ..\n", pids, msiFileName.c_str());
 			}
 		}
 	}
