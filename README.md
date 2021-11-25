@@ -6,7 +6,7 @@ Fetch the SDK installer at https://go.microsoft.com/fwlink/p/?linkid=845298 and 
 Open bash terminal (e.g. Git bash), `cd` to the `Installers` directory and do
 
     # Replace USERNAME by your actual user name
-    export SDK=C:\Users\USERNAME\Downloads\SDK
+    export SDK="C:\Users\USERNAME\Downloads\SDK"
     for f in *.msi ; do echo "msiexec /a \"$f\" TARGETDIR=$SDK" ; done >a.bat
 
 Open Windows command prompt and execute
